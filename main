@@ -1,0 +1,181 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+
+#define SIZE 3
+
+void paginaInicial();
+void inicializarTabuleiro(char tabuleiro[SIZE][SIZE]);
+void exibirTabuleiro(char tabuleiro[SIZE][SIZE]);
+int verificarVitoria(char tabuleiro[SIZE][SIZE], char jogador);
+int verificarEmpate(char tabuleiro[SIZE][SIZE]);
+int fazerJogada(char tabuleiro[SIZE][SIZE], char jogador);
+int verificarLinhaColuna(char a, char b, char c, char jogador);
+void limparBuffer();
+char perguntarNovaPartida();
+void exibirPlacar(int vitoriasX, int vitoriasO);
+
+int main() {
+    char tabuleiro[SIZE][SIZE];
+    char jogadorAtual;
+    int fimDoJogo;
+    int vitoriasX = 0, vitoriasO = 0;
+
+    paginaInicial();
+
+    do {
+        jogadorAtual = 'X';
+        fimDoJogo = 0;
+        inicializarTabuleiro(tabuleiro);
+
+        while (!fimDoJogo) {
+            exibirTabuleiro(tabuleiro);
+
+            while (!fazerJogada(tabuleiro, jogadorAtual)) {
+                // Continua até jogada válida
+            }
+
+            if (verificarVitoria(tabuleiro, jogadorAtual)) {
+                exibirTabuleiro(tabuleiro);
+                printf("🎉 Jogador %c venceu!\n", jogadorAtual);
+                if (jogadorAtual == 'X') vitoriasX++;
+                else vitoriasO++;
+                fimDoJogo = 1;
+                break;
+            }
+
+            if (verificarEmpate(tabuleiro)) {
+                exibirTabuleiro(tabuleiro);
+                printf("⚖️  Empate! Boa partida!\n");
+                fimDoJogo = 1;
+                break;
+            }
+
+            jogadorAtual = (jogadorAtual == 'X') ? 'O' : 'X';
+        }
+
+        exibirPlacar(vitoriasX, vitoriasO);
+
+    } while (perguntarNovaPartida() == 'S');
+
+    printf("\n👋 Obrigado por jogar!\n");
+    return 0;
+}
+
+void paginaInicial() {
+    printf("=====================================\n");
+    printf("         JOGO DA VELHA EM C          \n");
+    printf("=====================================\n");
+    printf("Regras:\n");
+    printf("- Dois jogadores: 'X' e 'O'\n");
+    printf("- Jogadas no formato linha,coluna (ex: 0,1)\n");
+    printf("- Digite 'sair' para encerrar o jogo a qualquer momento\n");
+    printf("- Vence quem alinhar 3 marcas em linha, coluna ou diagonal\n");
+    printf("=====================================\n");
+    printf("Pressione ENTER para iniciar...");
+    getchar();
+    limparBuffer();
+}
+
+void limparBuffer() {
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF);
+}
+
+void inicializarTabuleiro(char tabuleiro[SIZE][SIZE]) {
+    for (int i = 0; i < SIZE; i++)
+        for (int j = 0; j < SIZE; j++)
+            tabuleiro[i][j] = ' ';
+}
+
+void exibirTabuleiro(char tabuleiro[SIZE][SIZE]) {
+    printf("\n  0   1   2\n");
+    for (int i = 0; i < SIZE; i++) {
+        printf("%d ", i);
+        for (int j = 0; j < SIZE; j++) {
+            printf(" %c ", tabuleiro[i][j]);
+            if (j < SIZE - 1)
+                printf("|");
+        }
+        printf("\n");
+        if (i < SIZE - 1)
+            printf("  -----------\n");
+    }
+    printf("\n");
+}
+
+int verificarLinhaColuna(char a, char b, char c, char jogador) {
+    return (a == jogador && b == jogador && c == jogador);
+}
+
+int verificarVitoria(char tabuleiro[SIZE][SIZE], char jogador) {
+    for (int i = 0; i < SIZE; i++) {
+        if (verificarLinhaColuna(tabuleiro[i][0], tabuleiro[i][1], tabuleiro[i][2], jogador) ||
+            verificarLinhaColuna(tabuleiro[0][i], tabuleiro[1][i], tabuleiro[2][i], jogador)) {
+            return 1;
+        }
+    }
+    return verificarLinhaColuna(tabuleiro[0][0], tabuleiro[1][1], tabuleiro[2][2], jogador) ||
+           verificarLinhaColuna(tabuleiro[0][2], tabuleiro[1][1], tabuleiro[2][0], jogador);
+}
+
+int verificarEmpate(char tabuleiro[SIZE][SIZE]) {
+    for (int i = 0; i < SIZE; i++)
+        for (int j = 0; j < SIZE; j++)
+            if (tabuleiro[i][j] == ' ')
+                return 0;
+    return 1;
+}
+
+int fazerJogada(char tabuleiro[SIZE][SIZE], char jogador) {
+    char input[10];
+    int linha, coluna;
+
+    printf("Jogador %c, digite sua jogada (linha,coluna) ou 'sair': ", jogador);
+    fgets(input, sizeof(input), stdin);
+    input[strcspn(input, "\n")] = '\0';
+
+    if (strcmp(input, "sair") == 0) {
+        printf("❌ Jogo encerrado pelo jogador.\n");
+        exit(0);
+    }
+
+    if (sscanf(input, "%d,%d", &linha, &coluna) != 2) {
+        printf("⚠️  Formato inválido. Use linha,coluna (ex: 1,2).\n");
+        return 0;
+    }
+
+    if (linha < 0 || linha >= SIZE || coluna < 0 || coluna >= SIZE) {
+        printf("⚠️  Posição fora do tabuleiro. Escolha de 0 a 2.\n");
+        return 0;
+    }
+
+    if (tabuleiro[linha][coluna] != ' ') {
+        printf("⚠️  Posição já ocupada. Tente outra.\n");
+        return 0;
+    }
+
+    tabuleiro[linha][coluna] = jogador;
+    return 1;
+}
+
+char perguntarNovaPartida() {
+    char resposta[10];
+    while (1) {
+        printf("Deseja jogar novamente? (S/N): ");
+        fgets(resposta, sizeof(resposta), stdin);
+        limparBuffer();
+
+        if (resposta[0] == 'S' || resposta[0] == 's') return 'S';
+        if (resposta[0] == 'N' || resposta[0] == 'n') return 'N';
+
+        printf("❗ Resposta inválida. Digite 'S' para sim ou 'N' para não.\n");
+    }
+}
+
+void exibirPlacar(int vitoriasX, int vitoriasO) {
+    printf("\n========= 🧮 PLACAR =========\n");
+    printf("Jogador X: %d vitória(s)\n", vitoriasX);
+    printf("Jogador O: %d vitória(s)\n", vitoriasO);
+    printf("=============================\n\n");
+}
