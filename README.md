@@ -32,7 +32,7 @@ Este é um jogo da velha simples, implementado em linguagem C, que roda no termi
 
 1. Clone este repositório:
 
-git clone https://github.com/seu-usuario/jogo-da-velha-em-c.git
+git clone https://github.com/nathanleoo/Tic-Tac-Toe-Game.git
 
 Compile o código:
 gcc main.c -o jogo
